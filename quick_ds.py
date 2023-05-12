@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 
 # Literally just a lazy way to quickly plot data, will need to import later? idk
 class Speedy_Data_Science():
@@ -147,7 +148,7 @@ class Probability():
         print("The observed mean is within {} and {}".format(((sample_mean - observed_estimate), (sample_mean + observed_estimate))))
         return standard_error, observed_estimate
     
-class Quick_Machine_Learning():
+class Data_Transformation():
    
     
     # For reference, I should make a function that does all of these steps in one go, but for now I will keep seperate for the sake
@@ -220,29 +221,47 @@ class Quick_Machine_Learning():
     
     def natural_log(self, df, column_name: str):
         log = np.log(df[column_name])
+        
+class Linear_And_Multiple_Regression():
+     
+    def multi_lin_reg(self, df, x_columns: list, y_column: str):
+        x = df[[x_columns]]
+        y = df[y_column]
+        
+        x_train, x_test, y_train, y_test = train_test_split(x,y, train_size=.8, test_size=.2)
+        
+    def linear_regression_plot(self, df, x_column, y_column):
+        # Plot the data as is
+        plt.plot(df[x_column], df[y_column],'o')
+        plt.show()
+        plt.clf()
+        
+        # Create a line fitter from the sklearn library
+        line_fitter = Linear_Regression()
+        line_fitter.fit(df[x_column], df[y_column])
+        predicted = line_fitter.predict(df[x_column])
+        
+        # Plotting the prediction and line of best fit
+        plt.plot(df[x_column], predicted)
+        plt.show()
+        plt.close()
+        
+    def linear_regression_plot_no_df(self, x_column, y_column):
+        # Plot the data as is
+        plt.plot(df[x_column], df[y_column],'o')
+        plt.show()
+        plt.clf()
+        
+        # Create a line fitter from the sklearn library
+        line_fitter = Linear_Regression()
+        line_fitter.fit(df[x_column], df[y_column])
+        predicted = line_fitter.predict(df[x_column])
+        
+        # Plotting the prediction and line of best fit
+        plt.plot(df[x_column], predicted)
+        plt.show()
+        plt.close()
     
-    # x is the set of x-values, and y is the set of y-values
-    def get_gradient_at_b(x, y, m, b):
-        # Create a variable called diff
-        diff = 0
-        N = len(x)
-        for i in range(0, len(x)):
-            y_val = y[i]
-            x_val = x[i]
-            diff += (y_val - ((m * x_val) + b))
-
-        b_gradient = (-2/N) * diff
-
-        return b_gradient
-    def get_gradient_at_m(x, y, b, m):
-        N = len(x)
-        diff = 0
-        for i in range(N):
-            x_val = x[i]
-            y_val = y[i]
-            diff += x_val * (y_val - ((m * x_val) + b))
-        m_gradient = -(2/N) * diff  
-        return m_gradient
         
 
 
