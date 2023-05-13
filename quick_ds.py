@@ -6,15 +6,13 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 
 # Literally just a lazy way to quickly plot data, will need to import later? idk
 class Speedy_Data_Science():
 
     #### CURRENT QUANTITATIVE METHODS
-
-    def test_method(self):
-        print("Hello, you have succesfully imported Speedy Data Science!")
-
+     
     # Under construction..
     def min_max_mean_median_mode(self, df, column_name):
         print("Min value: {}".format(df[column_name].min()))
@@ -24,7 +22,7 @@ class Speedy_Data_Science():
         print("Mode: {}".format(df[column_name].mode()))
         
     def scatter(self, df, column_1: str, column_2: str, xlabel: str, ylabel: str):
-        plt.scatter(x=df[column_1], y=df[column_2])
+        plt.scatter(x=df[[column_1]], y=df[[column_2]], alpha=.4)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.show()
@@ -222,14 +220,52 @@ class Data_Transformation():
     def natural_log(self, df, column_name: str):
         log = np.log(df[column_name])
         
-class Linear_And_Multiple_Regression():
-     
-    def multi_lin_reg(self, df, x_columns: list, y_column: str):
-        x = df[[x_columns]]
-        y = df[y_column]
-        
-        x_train, x_test, y_train, y_test = train_test_split(x,y, train_size=.8, test_size=.2)
-        
+# Needs work
+class Linear_Regression():
+    # x is the set of x-values, and y is the set of y-values
+    # PT1
+    def get_gradient_at_b(x, y, m, b):
+        # Create a variable called diff
+        diff = 0
+        N = len(x)
+        for i in range(0, len(x)):
+            y_val = y[i]
+            x_val = x[i]
+            diff += (y_val - ((m * x_val) + b))
+
+        b_gradient = (-2/N) * diff
+
+        return b_gradient
+    
+    # PT2 / AKA how to find loss
+    def get_gradient_at_m(x, y, b, m):
+        N = len(x)
+        diff = 0
+        for i in range(N):
+            x_val = x[i]
+            y_val = y[i]
+            diff += x_val * (y_val - ((m * x_val) + b))
+        m_gradient = -(2/N) * diff  
+        return m_gradient
+    
+    # PT3
+    def step_gradient(x, y, b_current, m_current):
+        b_gradient = get_gradient_at_b(x, y, b_current, m_current)
+        m_gradient = get_gradient_at_m(x, y, b_current, m_current)
+        b = b_current - (0.01 * b_gradient)
+        m = m_current - (0.01 * m_gradient)
+
+        return [b, m]
+    
+    # PT4
+    def gradient_descent(x, y, learning_rate, num_iterations):
+        b = 0
+        m = 0
+        for i in range(num_iterations):
+            b, m =step_gradient(b, m, x, y, learning_rate)
+
+        return [b, m]
+    
     def linear_regression_plot(self, df, x_column, y_column):
         # Plot the data as is
         plt.plot(df[x_column], df[y_column],'o')
@@ -237,7 +273,7 @@ class Linear_And_Multiple_Regression():
         plt.clf()
         
         # Create a line fitter from the sklearn library
-        line_fitter = Linear_Regression()
+        line_fitter = LinearRegression()
         line_fitter.fit(df[x_column], df[y_column])
         predicted = line_fitter.predict(df[x_column])
         
@@ -253,7 +289,7 @@ class Linear_And_Multiple_Regression():
         plt.clf()
         
         # Create a line fitter from the sklearn library
-        line_fitter = Linear_Regression()
+        line_fitter = LinearRegression()
         line_fitter.fit(df[x_column], df[y_column])
         predicted = line_fitter.predict(df[x_column])
         
@@ -261,9 +297,49 @@ class Linear_And_Multiple_Regression():
         plt.plot(df[x_column], predicted)
         plt.show()
         plt.close()
-    
         
-
-
+class Multiple_Regression():
+    
+    # The data list variable must be a list of numbers that match the data types of the columns we feed to the x value
+    # within the function. The list contents must also be surrounded with double brackets: data_list = [[1,2,3, etc]] 
+    def multi_lin_reg(self, x, y, data_list: list):
+        # Establish the train_test_split_method, seperating the data into training and test units
+        x_train, x_test, y_train, y_test = train_test_split(x,y, train_size=.8, test_size=.2)
+        
+        # Create the linear regression model and feed it the training data
+        mlr = LinearRegression()
+        mlr.fit(x_train,y_train)
+        y_predict = mlr.predict(x_test)    
+        
+        # Create a prediction for the list fed by parameter and return it
+        prediction_variable = mlr.predict(data_list)
+        return "Predicted number: %.2f" % prediction_variable 
+        
+    # To use properly, the main dataframe must be split into two seperate dataframes, the x dataframe holding
+    # the indepent variables, and the y dataframe holding the singular dependent variable
+    def multi_lin_reg_scatter(self, x, y, x_label: str, y_label: str, title: str):
+        # Establish the train_test_split_method, seperating the data into training and test units
+        x_train, x_test, y_train, y_test = train_test_split(x,y, train_size=.8, test_size=.2)
+        
+        # Create the linear regression model and feed it the training data
+        mlr = LinearRegression()
+        mlr.fit(x_train,y_train)
+        y_predict = mlr.predict(x_test)
+        
+        # and regression loss for both training and testing sets
+        print("The training error score: {}".format(mlr.score(x_train,y_train)))
+        print("The testing error score: {}".format(mlr.score(x_test,y_test)))
+        
+        # Give option to make graph or to not make graph
+        fork = input("Produce scatterplot? y for yes, n for no:")
+        if fork == 'y':
+            # Plot the y_test and y_predict variables to compare them, alpha is how clear or unclear the dots appear
+            plt.scatter(y_test, y_predict, alpha=0.4)
+            plt.xlabel(x_label)
+            plt.ylabel(y_label)
+            plt.title(title)
+            plt.show()
+            plt.close() 
+        
 
 print("Debugging successful, Quick DS has no errors... at the moment.")
