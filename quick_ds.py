@@ -23,16 +23,23 @@ class Speedy_Data_Science():
         
     def scatter(self, df, column_1: str, column_2: str, xlabel: str, ylabel: str):
         plt.scatter(x=df[[column_1]], y=df[[column_2]], alpha=.4)
+        # This line breaks it
+        #plt.plot(range(x_beginning, x_end), range(y_beginning,y_end))
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.show()
         plt.close()
+        
+    def histogram_single(self, df, column_1: str, color1: str, label1: str, title: str):
+        plt.hist(df[column_1], color=color1, label=label1, alpha=.5)
+        plt.legend()
+        plt.title(title)
+        plt.show()
+        plt.close()
 
     def histogram_double(self, df, column_1: str, column_2: str, color1: str, color2: str, label1: str, label2: str, title: str):
-        plt.hist(df[column_1], color=color1,
-                    label=label1, normed=True, alpha=.5)
-        plt.hist(df[column_2], color=color2,
-                    lable=label2, normed=True, alpha=.5)
+        plt.hist(df[column_1], color=color1, label=label1, alpha=.5)
+        plt.hist(df[column_2], color=color2, label=label2, alpha=.5)
         plt.legend()
         plt.title(title)
         plt.show()
@@ -266,19 +273,34 @@ class Linear_Regression():
 
         return [b, m]
     
-    def linear_regression_plot(self, df, x_column, y_column):
+    # def lr_future_plot(self, df, x_column, y_column, x_beg, x_end):
         # Plot the data as is
-        plt.plot(df[x_column], df[y_column],'o')
+        line_fitter = LinearRegression()
+        
+        feature_1 = df[x_column]
+        feature_2 = df[y_column]
+        feature_1 = feature_1.values.reshape(-1,1)
+        feature_2 = feature_2.values.reshape(-1,1)
+        
+        # Setting proper x and y ranges
+        feature_1 = np.array(range(x_beg, x_end))
+        feature_2 = np.array(range(y_beg, y_end))
+        
+        plt.scatter(feature_1, feature_2)
         plt.show()
-        plt.clf()
         
         # Create a line fitter from the sklearn library
-        line_fitter = LinearRegression()
-        line_fitter.fit(df[x_column], df[y_column])
-        predicted = line_fitter.predict(df[x_column])
+        line_fitter.fit(feature_1, feature_2)
+        y_predict = line_fitter.predict(feature_1)
+        plt.plot(feature_1, y_predict)
+        plt.show()
         
-        # Plotting the prediction and line of best fit
-        plt.plot(df[x_column], predicted)
+        # Setting up new x-axis to reach further out into future numbers
+        X_future = np.array(range(x_beg, x_end))
+        X_future = X_future.reshape(-1,1)
+        # Predicting future outcome
+        future_prediction = line_fitter.predict(X_future)
+        plt.plot(X_future, future_prediction)
         plt.show()
         plt.close()
         
@@ -297,7 +319,61 @@ class Linear_Regression():
         plt.plot(df[x_column], predicted)
         plt.show()
         plt.close()
+   
+    # Most optimized model wrapper 
+    def lr_model(self, df, column_1, column_2, x_label, y_label):
+        features = df[[column_1]]
+        outcome = df[[column_2]]
+        features = features.values.reshape(-1,1)
+        outcome = outcome.values.reshape(-1,1)
         
+        # Plotting line of best fit
+        plt.scatter(features, outcome, alpha=.4)
+        
+        # Setting up training and testing data
+        features_training, features_testing, outcome_training, outcome_testing = train_test_split(features, outcome, train_size = .8, test_size=.2)
+        l_model = LinearRegression()
+        l_model.fit(features_training, outcome_training)
+        
+        score = l_model.score(features_testing, outcome_testing)
+        print("Model scoring: {}".format(score))
+        
+        model_prediction = l_model.predict(features_testing)
+        plt.scatter(outcome_testing, model_prediction, alpha=.4)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.show()
+        plt.close()
+     
+    def lr_future_plot(self, df, column_1: str, column_2: str, x_beg: int, x_end: int):
+        regr = LinearRegression()
+        plt.ion()
+        
+        X = df[column_1]
+        X = X.values.reshape(-1,1)
+        y = df[column_2]
+        y = y.values.reshape(-1,1)
+
+        plt.scatter(X,y)
+        plt.show()
+
+
+        regr.fit(X,y)
+        y_predict = regr.predict(X)
+
+        plt.plot(X, y_predict)
+        plt.show()
+
+        X_future = np.array(range(x_beg, x_end))
+        X_future = X_future.reshape(-1,1)
+
+        future_predict = regr.predict(X_future)
+        plt.plot(X_future, future_predict)
+        plt.show()     
+        
+        score = regr.score(X, y)
+        print("Model scoring: {}".format(score))
+
 class Multiple_Regression():
     
     # The data list variable must be a list of numbers that match the data types of the columns we feed to the x value
