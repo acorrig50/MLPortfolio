@@ -7,6 +7,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
 
 # Literally just a lazy way to quickly plot data, will need to import later? idk
 class Speedy_Data_Science():
@@ -273,7 +275,7 @@ class Linear_Regression():
 
         return [b, m]
     
-    # def lr_future_plot(self, df, x_column, y_column, x_beg, x_end):
+        # def lr_future_plot(self, df, x_column, y_column, x_beg, x_end):
         # Plot the data as is
         line_fitter = LinearRegression()
         
@@ -416,6 +418,59 @@ class Multiple_Regression():
             plt.title(title)
             plt.show()
             plt.close() 
+     
+class Logistic_Regression():
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # 1. model.fit(features, labels) / 
+    # 2. Label is what we are trying to predict using the features, which means features can be MULTIPLE columns
+    # 3. Used for binary classification, 0 and 1, yes or no, True or False
+    def log_regression(df, features, labels):
+        # Establish the x and y axis with columns put into the function
+        X = df[[features]]
+        y = df[[labels]]
         
+        # Transforming the x axis 
+        scaler = StandardScaler()
+        scaler.fit(X)
+        X = scaler.transform(X)
+        
+        # Partition training and testing data 
+        X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=.25, random_state=27)
+
+        # Create and fit the model
+        model = LogisticRegression()
+        model.fit(X_train,y_train)
+        
+        # Printing the predicted outcomes and probabilities for the test data
+        print("Outcomes: " + model.predict(X_test))
+        print("Probabilities: " + model.predict_proba(X_test)[:,1])
+        
+        # Creating and printing the confusion matrix
+        y_pred = model.predict(X_test)
+        print("True classes: {}".format(y_test))
+        print("Confusion matrix: {}".format(confusion_matrix(y_test, y_pred)))
+        
+        # Printing statistics from confusion matrix: accuracy, precision, recall, F1
+        from sklearn.metrics import accuracy_score
+        from sklearn.metrics import precision_score
+        from sklearn.metrics import recall_score
+        from sklearn.metrics import f1_score
+        print("Accuracy: {}".format(accuracy_score(y_true,y_pred))))
+        print("Precision: {}".format(precision_score(y_true,y_pred))))
+        print("Recall: {}".format(recall_score(y_true,y_pred))))
+        print("F1: {}".format(f1_score(y_true,y_pred))))
+        
+        # Save the intercept and coef to new variables
+        intercept = model.intercept_
+        coef = model.coef_
+        
+        # Calculate the log odds
+        log_odds =intercept + coef * X
+        
+        # Now we calculate the predicted probability of the two columns
+        predicted_probability = np.exp(log_odds)/(1+ np.exp(log_odds))
+        ## Can return or plot this line above, not sure what to do with it yet
+
 
 print("Debugging successful, Quick DS has no errors... at the moment.")
