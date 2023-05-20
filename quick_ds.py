@@ -474,16 +474,19 @@ class Logistic_Regression():
         ## Can return or plot this line above, not sure what to do with it yet
 
 class Statistics():
-    from scipy.stats import ttest_1samp
     
+    # __________ GENERAL USE OF FUNCTION ___________
     # Takes in a frame and a column name, with int or float values and
     # finds the probability of 'prediction_mean' occurence. It then returns 
     # this in the form of 'pval'
     # NOTE: THIS IS ONLY FOR NULL, CHANGE THE 'prediction_mean' VAR TO CREATE AN ALTERNATIVE HYPOTHESIS
     def sample_t_test(self, df, column_name: str, prediction_mean: float):
+        from scipy.stats import ttest_1samp
+        
         tstat, pval = ttest_1samp(df[[column_name]], prediction_mean)
         return pval
 
+    # __________ GENERAL USE OF FUNCTION ___________
     # Because it is used for binomial categorical simulation, the function takes in two outcomes,
     # either outcome can be str, int, or float. It then uses a size, or how many iterations it will 
     # repeat itself. The outcome_1 and outcome_2 parameters will set the likelihood of option_1 and 2's occurence
@@ -491,6 +494,7 @@ class Statistics():
         binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
         return binom_sim
     
+    # __________ GENERAL USE OF FUNCTION ___________
     # The function is exactly the same as the binomial_simulation function save that this one appends the results of the binomial to
     # a list that is then averaged out and printed to the console. This helps use the binomial sim at a large scale and fine tune the 
     # probability of outcomes to the most minuscule detail 
@@ -504,6 +508,7 @@ class Statistics():
         print("Option 1 average: {}".format(np.average(option_1_list) / size))
         print("Option 2 average: {}".format(np.average(option_2_list) / size))
         
+    # __________ GENERAL USE OF FUNCTION ___________
     # Instead of returning the values, graphs the outcomes instead
     def binomial_simulation_plot(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int):
         option_1_list = []
@@ -524,10 +529,12 @@ class Statistics():
         plt.show()
         plt.close()
 
+    # __________ GENERAL USE OF FUNCTION ___________
     # Fairly simple function, may just delete due to ease of use
     def confidence_interval(self, binomial_sim_function, range_1: float, range_2: float):
         np.percentile(binomial_sim_function, [range_1,range_2])
         
+    # __________ GENERAL USE OF FUNCTION ___________
     # Takes in the same parameters as the binomial simulation functionns but returns the p-value of option 1 and 2 that are LESS THAN
     # what the average of the list was
     # This function works best as an alternate hypothesis tool
@@ -547,6 +554,7 @@ class Statistics():
         
         return p_value_option_1, p_value_option_2
     
+    # __________ GENERAL USE OF FUNCTION ___________
     # Returns the p-value of option 1 and 2 that are GREATER THAN the average of the list
     # This function works best as an alternate hypothesis tool
     def one_sided_p_value_greaterthan(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int):
@@ -565,8 +573,65 @@ class Statistics():
         
         return p_value_option_1, p_value_option_2
     
-    def two_sided_p_value(self):
-        pass
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Default test for many functions in Python
+    # 
+    def two_sided_p_value(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int, beg: int, end: int):
+        option_1_list = []
+        option_2_list = []
+        for i in range(loop_length):
+            binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
+            option_1_list.append(np.sum(binom_sim == option_1))
+            option_2_list.append(np.sum(binom_sim == option_2))
+            
+        option_1_list = np.array(option_1_list)
+        option_2_list = np.array(option_2_list)
+        
+        p_value_option_1_two_sided = np.sum((option_1_list <= beg) | (option_1_list >= end)) / len(option_1_list)
+        p_value_option_2_two_sided = np.sum((option_2_list <= beg) | (option_2_list >= end)) / len(option_2_list)
+        
+        return p_value_option_1_two_sided, p_value_option_2_two_sided
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    def my_binom(self, observed_amount: int, amount_tests: int, p: float):
+        from scipy.stats import binom_test
+        
+        binom_alternatives= ['two-sided','greater','less']
+        hypotheses_list = []
+        for i in range(3):
+            hypotheses_list.append(binom_test(observed_amount, n = amount_tests, p = p, alternative=binom_alternatives[i]))
+        
+        print("Greater OR less than {} p-value: {}".format(observed_amount, hypotheses_list[0]))
+        print("greater than {} p-value: {}".format(observed_amount, hypotheses_list[1]))
+        print("less than {} p-value: {}".format(observed_amount, hypotheses_list[2]))
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Takes the p-value variable and runs it against a few tests, returning as not significant if its greater than 5%
+    # and significant it is less than 5%
+    # 
+    # Being less than 5% could indicate that there is a significant difference in the numbers we are looking for, hinting that there
+    # may be a required change for the parameter we tested 
+    #
+    # Test will run 10000 times by default, add parameter to edit execution count
+    def sigthresh(self, option_1, option_2, sim_size,  p: float, sig_threshold: float, alternative: str):
+        from scipy.stats import binom_test
+
+        # Initialize num_errors
+        false_positives = 0
+        # Set significance threshold value
+        sig_threshold = sig_threshold
+
+        # Run binomial tests & record errors
+        for i in range(10000):
+            sim_sample = np.random.choice([option_1, option_2], size=sim_size, p=[p, 1-p])
+            num_correct = np.sum(sim_sample == option_1)
+            p_val = binom_test(num_correct, sim_size, p, alternative=alternative)
+            if p_val < sig_threshold:
+                false_positives += 1
+
+        # Print proportion of type I errors 
+        print("False positives: {}".format(false_positives/1000))
+        print("The pvalue is: {}".format(p_val))
 
 
 
