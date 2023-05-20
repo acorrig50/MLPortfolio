@@ -7,6 +7,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
 
 # Literally just a lazy way to quickly plot data, will need to import later? idk
 class Speedy_Data_Science():
@@ -125,6 +127,7 @@ class Probability():
         # add return statement here
         return (prob_a + prob_b - prob_inter)
     
+    # AKA CLT, used in the Null hypothesis process
     def sampling_distribution_graph(self, df, column_name: str, sample_size: int, x_label: str):
         # We wan't to create a list of means, then plot them. Essentially we are
         # looking for the mean of the mean
@@ -273,7 +276,7 @@ class Linear_Regression():
 
         return [b, m]
     
-    # def lr_future_plot(self, df, x_column, y_column, x_beg, x_end):
+        # def lr_future_plot(self, df, x_column, y_column, x_beg, x_end):
         # Plot the data as is
         line_fitter = LinearRegression()
         
@@ -416,6 +419,220 @@ class Multiple_Regression():
             plt.title(title)
             plt.show()
             plt.close() 
+     
+class Logistic_Regression():
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # 1. model.fit(features, labels) / 
+    # 2. Label is what we are trying to predict using the features, which means features can be MULTIPLE columns
+    # 3. Used for binary classification, 0 and 1, yes or no, True or False
+    def log_regression(df, features, labels):
+        # Establish the x and y axis with columns put into the function
+        X = df[[features]]
+        y = df[[labels]]
         
+        # Transforming the x axis 
+        scaler = StandardScaler()
+        scaler.fit(X)
+        X = scaler.transform(X)
+        
+        # Partition training and testing data 
+        X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=.25, random_state=27)
+
+        # Create and fit the model
+        model = LogisticRegression()
+        model.fit(X_train,y_train)
+        
+        # Printing the predicted outcomes and probabilities for the test data
+        print("Outcomes: " + model.predict(X_test))
+        print("Probabilities: " + model.predict_proba(X_test)[:,1])
+        
+        # Creating and printing the confusion matrix
+        y_pred = model.predict(X_test)
+        print("True classes: {}".format(y_test))
+        print("Confusion matrix: {}".format(confusion_matrix(y_test, y_pred)))
+        
+        # Printing statistics from confusion matrix: accuracy, precision, recall, F1
+        from sklearn.metrics import accuracy_score
+        from sklearn.metrics import precision_score
+        from sklearn.metrics import recall_score
+        from sklearn.metrics import f1_score
+        print("Accuracy: {}".format(accuracy_score(y_true,y_pred)))
+        print("Precision: {}".format(precision_score(y_true,y_pred)))
+        print("Recall: {}".format(recall_score(y_true,y_pred)))
+        print("F1: {}".format(f1_score(y_true,y_pred)))
+        
+        # Save the intercept and coef to new variables
+        intercept = model.intercept_
+        coef = model.coef_
+        
+        # Calculate the log odds
+        log_odds =intercept + coef * X
+        
+        # Now we calculate the predicted probability of the two columns
+        predicted_probability = np.exp(log_odds)/(1+ np.exp(log_odds))
+        ## Can return or plot this line above, not sure what to do with it yet
+
+class Statistics():
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Takes in a frame and a column name, with int or float values and
+    # finds the probability of 'prediction_mean' occurence. It then returns 
+    # this in the form of 'pval'
+    # NOTE: THIS IS ONLY FOR NULL, CHANGE THE 'prediction_mean' VAR TO CREATE AN ALTERNATIVE HYPOTHESIS
+    def sample_t_test(self, df, column_name: str, prediction_mean: float):
+        from scipy.stats import ttest_1samp
+        
+        tstat, pval = ttest_1samp(df[[column_name]], prediction_mean)
+        return pval
+
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Because it is used for binomial categorical simulation, the function takes in two outcomes,
+    # either outcome can be str, int, or float. It then uses a size, or how many iterations it will 
+    # repeat itself. The outcome_1 and outcome_2 parameters will set the likelihood of option_1 and 2's occurence
+    def binomial_simulation(self, option_1, option_2, size: int, outcome_1: float, outcome_2: float):
+        binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
+        return binom_sim
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # The function is exactly the same as the binomial_simulation function save that this one appends the results of the binomial to
+    # a list that is then averaged out and printed to the console. This helps use the binomial sim at a large scale and fine tune the 
+    # probability of outcomes to the most minuscule detail 
+    def binomial_simulation_list(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int):
+        option_1_list = []
+        option_2_list = []
+        for i in range(loop_length):
+            binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
+            option_1_list.append(np.sum(binom_sim == option_1))
+            option_2_list.append(np.sum(binom_sim == option_2))
+        print("Option 1 average: {}".format(np.average(option_1_list) / size))
+        print("Option 2 average: {}".format(np.average(option_2_list) / size))
+        
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Instead of returning the values, graphs the outcomes instead
+    def binomial_simulation_plot(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int):
+        option_1_list = []
+        option_2_list = []
+        for i in range(loop_length):
+            binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
+            option_1_list.append(np.sum(binom_sim == option_1))
+            option_2_list.append(np.sum(binom_sim == option_2))
+            
+        plt.hist(option_1_list)
+        plt.axvline(np.average(option_1_list), color='r')
+        plt.show()
+        plt.close()
+
+        
+        plt.hist(option_2_list)
+        plt.axvline(np.average(option_2_list), color='r')
+        plt.show()
+        plt.close()
+
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Fairly simple function, may just delete due to ease of use
+    def confidence_interval(self, binomial_sim_function, range_1: float, range_2: float):
+        np.percentile(binomial_sim_function, [range_1,range_2])
+        
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Takes in the same parameters as the binomial simulation functionns but returns the p-value of option 1 and 2 that are LESS THAN
+    # what the average of the list was
+    # This function works best as an alternate hypothesis tool
+    def one_sided_p_value_lessthan(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int):
+        option_1_list = []
+        option_2_list = []
+        for i in range(loop_length):
+            binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
+            option_1_list.append(np.sum(binom_sim == option_1))
+            option_2_list.append(np.sum(binom_sim == option_2))
+            
+        option_1_list = np.array(option_1_list)
+        option_2_list = np.array(option_2_list)
+        
+        p_value_option_1 = np.sum(option_1_list <= np.average(option_1_list)) / len(option_1_list)
+        p_value_option_2 = np.sum(option_2_list <= np.average(option_2_list)) / len(option_2_list)
+        
+        return p_value_option_1, p_value_option_2
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Returns the p-value of option 1 and 2 that are GREATER THAN the average of the list
+    # This function works best as an alternate hypothesis tool
+    def one_sided_p_value_greaterthan(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int):
+        option_1_list = []
+        option_2_list = []
+        for i in range(loop_length):
+            binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
+            option_1_list.append(np.sum(binom_sim == option_1))
+            option_2_list.append(np.sum(binom_sim == option_2))
+            
+        option_1_list = np.array(option_1_list)
+        option_2_list = np.array(option_2_list)
+        
+        p_value_option_1 = np.sum(option_1_list >= np.average(option_1_list)) / len(option_1_list)
+        p_value_option_2 = np.sum(option_2_list >= np.average(option_2_list)) / len(option_2_list)
+        
+        return p_value_option_1, p_value_option_2
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Default test for many functions in Python
+    # 
+    def two_sided_p_value(self, option_1: str, option_2, size: int, outcome_1: float, outcome_2: float, loop_length: int, beg: int, end: int):
+        option_1_list = []
+        option_2_list = []
+        for i in range(loop_length):
+            binom_sim = np.random.choice([option_1, option_2], size = size, p= [outcome_1, outcome_2])
+            option_1_list.append(np.sum(binom_sim == option_1))
+            option_2_list.append(np.sum(binom_sim == option_2))
+            
+        option_1_list = np.array(option_1_list)
+        option_2_list = np.array(option_2_list)
+        
+        p_value_option_1_two_sided = np.sum((option_1_list <= beg) | (option_1_list >= end)) / len(option_1_list)
+        p_value_option_2_two_sided = np.sum((option_2_list <= beg) | (option_2_list >= end)) / len(option_2_list)
+        
+        return p_value_option_1_two_sided, p_value_option_2_two_sided
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    def my_binom(self, observed_amount: int, amount_tests: int, p: float):
+        from scipy.stats import binom_test
+        
+        binom_alternatives= ['two-sided','greater','less']
+        hypotheses_list = []
+        for i in range(3):
+            hypotheses_list.append(binom_test(observed_amount, n = amount_tests, p = p, alternative=binom_alternatives[i]))
+        
+        print("Greater OR less than {} p-value: {}".format(observed_amount, hypotheses_list[0]))
+        print("greater than {} p-value: {}".format(observed_amount, hypotheses_list[1]))
+        print("less than {} p-value: {}".format(observed_amount, hypotheses_list[2]))
+    
+    # __________ GENERAL USE OF FUNCTION ___________
+    # Takes the p-value variable and runs it against a few tests, returning as not significant if its greater than 5%
+    # and significant it is less than 5%
+    # 
+    # Being less than 5% could indicate that there is a significant difference in the numbers we are looking for, hinting that there
+    # may be a required change for the parameter we tested 
+    #
+    # Test will run 10000 times by default, add parameter to edit execution count
+    def sigthresh(self, option_1, option_2, sim_size,  p: float, sig_threshold: float, alternative: str):
+        from scipy.stats import binom_test
+
+        # Initialize num_errors
+        false_positives = 0
+        # Set significance threshold value
+        sig_threshold = sig_threshold
+
+        # Run binomial tests & record errors
+        for i in range(10000):
+            sim_sample = np.random.choice([option_1, option_2], size=sim_size, p=[p, 1-p])
+            num_correct = np.sum(sim_sample == option_1)
+            p_val = binom_test(num_correct, sim_size, p, alternative=alternative)
+            if p_val < sig_threshold:
+                false_positives += 1
+
+        # Print proportion of type I errors 
+        print("False positives: {}".format(false_positives/1000))
+        print("The pvalue is: {}".format(p_val))
+
+
 
 print("Debugging successful, Quick DS has no errors... at the moment.")
