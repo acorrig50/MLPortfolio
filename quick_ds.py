@@ -9,9 +9,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
+import statsmodels.api as sm
 
 # Literally just a lazy way to quickly plot data, will need to import later? idk
-class Speedy_Data_Science():
+class Speedy_Data_Science():.
 
     #### CURRENT QUANTITATIVE METHODS
      
@@ -376,6 +377,32 @@ class Linear_Regression():
         
         score = regr.score(X, y)
         print("Model scoring: {}".format(score))
+        
+    # _____About_____
+    # The first column that is within the input string will be the feature that the model tries to predict!
+    # The input string must be formated as: 'column_1 ~ column_2',
+    def ols_model(self, df, column_1,column_2):
+        # Creating the model and fitting the results
+        model = sm.OLS.from_formula(column_1 + " ~ " + column_2, data=df)
+        results = model.fit()
+        
+        # Creating and subtracting the fitted values from the actual values
+        fitted_values = results.predict(df[column_1])
+        residuals = df[column_1] - fitted_values
+        
+        # Plotting the residuals to make sure its normally distributed
+        # Plotting the homoscedasticity as well, the more scattered the plot, the better.
+        #   If the plot is not scattered, this indicates that linear regression may not be the best
+        #   way to investigate the relationship of the variables.
+        plt.hist(residuals)
+        plt.scatter(fitted_values, residuals)
+        plt.show()
+        plt.close()
+        
+        # Now we plot the original scatter plot with the line of best fit
+        plt.scatter(df[column_1], df[column_2])
+        plt.plot(df[column_2], results.params[0] + results.params[1] * df[column_2] )
+        
 
 class Multiple_Regression():
     
