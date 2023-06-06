@@ -12,7 +12,7 @@ from sklearn.metrics import confusion_matrix
 import statsmodels.api as sm
 
 # Literally just a lazy way to quickly plot data, will need to import later? idk
-class Speedy_Data_Science():.
+class Speedy_Data_Science():
 
     #### CURRENT QUANTITATIVE METHODS
      
@@ -381,7 +381,7 @@ class Linear_Regression():
     # _____About_____
     # The first column that is within the input string will be the feature that the model tries to predict!
     # The input string must be formated as: 'column_1 ~ column_2',
-    def ols_model(self, df, column_1,column_2):
+    def ols_model(self, df, column_1, column_2):
         # Creating the model and fitting the results
         model = sm.OLS.from_formula(column_1 + " ~ " + column_2, data=df)
         results = model.fit()
