@@ -109,6 +109,15 @@ class Speedy_Data_Science():
 
         return cont_table, cont_table_prop, chi2, expected
 
+    # Lets us view the predictor variable affected by multiple features
+    def seaborn_lr_model(self, df, column_1, column_2, column_3, x_label, y_label, title):
+        sns.lmplot(x = column_1, y=column_2, hue=column_3, data=df)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
+        plt.show()
+        plt.clf()
+        
 # Class for probability, small for now, will expand later
 class Probability():
    
@@ -381,9 +390,18 @@ class Linear_Regression():
     # _____About_____
     # The first column that is within the input string will be the feature that the model tries to predict!
     # The input string must be formated as: 'column_1 ~ column_2',
-    def ols_model(self, df, column_1, column_2):
+    # NOTE: Doesn't work for now, need to fix
+    def ols_model(self, df, column_string):
+        
+        # Splitting the input string to gather both columns for later
+        #   processing
+        column_names = column_string.split('~')
+        column_1 = column_names[0]
+        column_2 = column_names[1]
+        
+        
         # Creating the model and fitting the results
-        model = sm.OLS.from_formula(column_1 + " ~ " + column_2, data=df)
+        model = sm.OLS.from_formula(column_1 + "~" + column_2, data=df)
         results = model.fit()
         
         # Creating and subtracting the fitted values from the actual values
@@ -403,7 +421,6 @@ class Linear_Regression():
         plt.scatter(df[column_1], df[column_2])
         plt.plot(df[column_2], results.params[0] + results.params[1] * df[column_2] )
         
-
 class Multiple_Regression():
     
     # The data list variable must be a list of numbers that match the data types of the columns we feed to the x value
@@ -659,7 +676,5 @@ class Statistics():
         # Print proportion of type I errors 
         print("False positives: {}".format(false_positives/1000))
         print("The pvalue is: {}".format(p_val))
-
-
 
 print("Debugging successful, Quick DS has no errors... at the moment.")
