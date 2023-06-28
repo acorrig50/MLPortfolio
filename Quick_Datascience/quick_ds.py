@@ -57,6 +57,12 @@ class Speedy_Data_Science():
         sns.boxplot(data=df, x=df[column_1], y=df[column_2])
         plt.show()
         plt.close()
+        
+    # Good for including a third variable for comparison
+    def boxplot_triple(self, df, column_1: str, column_2: str, column_3: str):
+        sns.boxplot(x = column_1, y = column_2, hue = column_3, palette= 'pastel', data= df)
+        var = input("Name your boxplot figure: ")
+        plt.savefig('{}.png'.format(var))
 
     def covariance(self, df, column_1: str, column_2: str):
         covariance, p = np.cov(df[column_1], df[column_2])
