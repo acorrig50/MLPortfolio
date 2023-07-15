@@ -229,12 +229,12 @@ class Starkiller():
         sold_url_list = []    
         for item in to_string:
             url = requests.get("https://www.ebay.com/sch/i.html?_from=R40&_nkw=" 
-                                + item + "&_sacat=0&LH_TitleDesc=0&LH_BIN=1&LH_ItemCondition=4&rt=nc&_fsrp=1")
+                                + item + "&_sacat=0&LH_TitleDesc=0&rt=nc")
             url_list.append(url)   
             
         for item in to_string:
             url = requests.get("https://www.ebay.com/sch/i.html?_from=R40&_nkw="
-                                + item +" &_sacat=0&LH_TitleDesc=0&LH_BIN=1&LH_ItemCondition=4&_fsrp=1&rt=nc&LH_Sold=1&LH_Complete=1")
+                                + item +"&_sacat=0&LH_TitleDesc=0&rt=nc&LH_Sold=1&LH_Complete=1")
             sold_url_list.append(url)
         
         # _____Grabbing for listed totals______
