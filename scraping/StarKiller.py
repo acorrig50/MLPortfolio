@@ -229,12 +229,12 @@ class Starkiller():
         sold_url_list = []    
         for item in to_string:
             url = requests.get("https://www.ebay.com/sch/i.html?_from=R40&_nkw=" 
-                                + item + "&_sacat=0&LH_TitleDesc=0&LH_BIN=1&LH_ItemCondition=4&rt=nc&_fsrp=1")
+                                + item + "&_sacat=0&LH_TitleDesc=0&rt=nc")
             url_list.append(url)   
             
         for item in to_string:
             url = requests.get("https://www.ebay.com/sch/i.html?_from=R40&_nkw="
-                                + item +" &_sacat=0&LH_TitleDesc=0&LH_BIN=1&LH_ItemCondition=4&_fsrp=1&rt=nc&LH_Sold=1&LH_Complete=1")
+                                + item +"&_sacat=0&LH_TitleDesc=0&rt=nc&LH_Sold=1&LH_Complete=1")
             sold_url_list.append(url)
         
         # _____Grabbing for listed totals______
@@ -305,11 +305,14 @@ class Starkiller():
         
         # Now we perform calculations and print them out for each item
         # NOTE: Where I left off
+        final_item_list = []
         for i in range(len(to_string)):
             print("_____{}_____".format(to_string[i]))
             print("Amount listed: {} / Amount sold: {}".format(total_amounts_listed[i],total_amounts_sold[i]))
             print("Turnover rate: {}".format(round(total_amounts_sold[i] / total_amounts_listed[i], 2)))
-        
+            final_item_list.append([to_string[i],total_amounts_sold[i] / total_amounts_listed[i]])
+            
+        return final_item_list
     # _____Use_____
     # NOTE: Under construction
     # Current plans are to have this function take in the details from the webpage that details items sold and make a dataframe
@@ -320,9 +323,24 @@ class Starkiller():
 star = Starkiller()
 # Uncomment this back to see the average prices, otherwise you'll get turnover rate only
 #star.file_price_scraper_bin()
-star.chance_to_sell()
 
+# NOTE: When using the code below, understand you will get both default console output AND a list returned from the item_list variable
+#   Added 7/19/2023
+#   Thought process is to automatically be able to sort from highest to lowest once a list of brands is concatenated to the point of
+#   no longer being able to analyze the rates due to the sheer numbers being shown
+item_list = star.chance_to_sell()
+print("List length: {}".format(len(item_list)))
+print(item_list)
+ 
+# Now we want to include only the highest turnover rates AFTER making sure the second entry in the list is a float
 
+best_turnovers = []
+for i in range(len(item_list)):
+    item_list[i][1] = float(item_list[i][1])
+    
+    if item_list[i][1] >= .4:
+        best_turnovers.append(item_list[i])
+print("Best Turnovers: {}".format(best_turnovers))
 
 
 
